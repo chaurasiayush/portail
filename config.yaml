@@ -1,0 +1,11 @@
+forwards:
+  - listen: ":8080"
+    forward: "your-host.com:8080"
+    protocol: "tcp"
+
+  - listen: ":8433"
+    forward: "example.com:443"
+    protocol: "tcp"
+    tls:
+      enabled: false
+      skip_verify: true
