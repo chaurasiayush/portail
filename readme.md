@@ -1,96 +1,105 @@
-# 🌐 Portail
+# Portail 🌀
 
-> A blazing-fast, YAML-configurable port forwarder written in Go.  
-> Supports TCP/UDP forwarding, TLS passthrough, and hot-reloading on config changes.
+**Portail** is a simple, production-ready, and hot-reloadable TCP/UDP port forwarder written in Go. It uses a declarative YAML configuration to define forwarding rules and supports live reloading using `fsnotify`.
 
 ---
 
 ## 🚀 Features
 
-- 🔁 Forward **TCP** and **UDP** ports to remote destinations
-- 🔐 Optional **TLS passthrough** with skip verify support
-- 🔧 Configurable via a single `config.yaml` file
-- ♻️ **Hot reload** on config file changes
-- 🛠️ Minimal dependencies, easy to run as a binary or Docker container
+- 🔁 Port forwarding for both **TCP** and **UDP**
+- 📁 Simple YAML-based configuration
+- ♻️ **Hot reload** support using `fsnotify`
+- 🛠️ Graceful shutdown via OS signals
+- 🧱 Production-ready structure
 
 ---
 
-## 📦 Installation
+## 📦 Project Structure
 
-### Option 1: Build from source
-
-```bash
-git clone https://github.com/your-username/portail.git
-cd portail
-go build -o portail
+```
+portail/
+├── cmd/
+│   └── portail/
+│       └── main.go           # Main entry point
+├── internal/
+│   ├── config/
+│   │   └── config.go         # Loads YAML config
+│   └── forwarder/
+│       └── forwarder.go      # TCP and UDP forwarders
+├── config.yaml              # Sample config file
+├── Dockerfile               # Docker image definition
+├── go.mod
+├── go.sum
+└── README.md
 ```
 
-### Option 2: Run with Docker
+---
 
-Coming soon! (Let me know if you want the Dockerfile now.)
+## 🧪 Example `config.yaml`
+
+```yaml
+forwards:
+  - protocol: tcp
+    listen: ":8080"
+    target: "localhost:3000"
+
+  - protocol: udp
+    listen: ":5353"
+    target: "localhost:5354"
+```
 
 ---
 
-## ⚙️ Usage
+## 🛠️ Usage
+
+### 1. Build the Binary
+
+```bash
+go build -o portail ./cmd/portail
+```
+
+### 2. Run with Config
 
 ```bash
 ./portail --config=config.yaml
 ```
 
-> Or if using `go run`:
->
-> ```bash
-> go run . --config=config.yaml
-> ```
+### 3. Modify Config
+Just edit and save `config.yaml`. `portail` will auto-detect changes and reload the file.
 
 ---
 
-## 🧾 Sample `config.yaml`
+## 🧠 How It Works
 
-```yaml
-forwards:
-  - protocol: tcp
-    listen: "127.0.0.1:8080"
-    forward: "example.com:80"
+- `fsnotify.NewWatcher()` monitors the config file
+- On file **Write** events, it re-parses and reloads the config
+- Graceful signal handling with `SIGINT`/`SIGTERM`
 
-  - protocol: udp
-    listen: "127.0.0.1:5353"
-    forward: "8.8.8.8:53"
+---
 
-  - protocol: tcp
-    listen: "127.0.0.1:8443"
-    forward: "secure.example.com:443"
-    tls:
-      enabled: true
-      skip_verify: true
+## 🐳 Docker
+
+### Build Docker Image
+
+```bash
+docker build -t portail .
 ```
 
----
+### Run with Volume-Mounted Config
 
-## 🔄 Hot Reload
-
-Portail automatically watches your `config.yaml` file and applies changes on the fly — no restart needed.
-
----
-
-## 📂 Project Structure
-
+```bash
+docker run --rm \
+  -v $(pwd)/config.yaml:/app/config.yaml \
+  -p 8080:8080 \
+  -p 5353:5353/udp \
+  portail --config=/app/config.yaml
 ```
-portail/
-├── main.go         # Entry point and CLI flags
-├── forwarder.go    # TCP/UDP forwarding logic
-├── config.go       # YAML parsing and config structs
-├── config.yaml     # Sample config
-```
-
 ---
-
 ## 👨‍💻 Contributing
 
 Got ideas or feature requests? PRs and issues welcome!
 
 ---
-
 ## 📄 License
 
 MIT License. See `LICENSE` file for details.
